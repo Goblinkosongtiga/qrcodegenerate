@@ -138,43 +138,42 @@
 
         const size = parseInt(sizeSelect.value, 10) || 256;
         
-        // Mapping level error correction
-        const levelMap = {
-            L: 'L',
-            M: 'M',
-            Q: 'Q',
-            H: 'H'
-        };
-
         // Buat elemen canvas baru
         const canvas = document.createElement('canvas');
         qrContainer.appendChild(canvas);
 
         // Generate QR Code menggunakan library modern (QRCode.toCanvas)
-        window.QRCode.toCanvas(canvas, url, {
-            width: size,
-            margin: 2, // Memberi jarak tepi (quiet zone) agar mudah discan Google Lens
-            color: {
-                dark: colorDark.value,
-                light: colorLight.value
-            },
-            errorCorrectionLevel: levelMap[errorLevel.value] || 'H'
-        }, function (error) {
-            if (error) {
-                showError('Gagal membuat QR Code. Pastikan URL valid.');
-                console.error(error);
-                return;
-            }
-            
-            // Jika berhasil, aktifkan tombol
-            lastValidUrl = url;
-            urlInput.value = url;
-            downloadPngBtn.disabled = false;
-            copyUrlBtn.disabled = false;
-            
-            // Simpan riwayat
-            pushHistory(url);
-        });
+        try {
+            // Panggil global QRCode dari CDN yang baru
+            window.QRCode.toCanvas(canvas, url, {
+                width: size,
+                margin: 2, // Memberi jarak tepi (quiet zone) agar mudah discan
+                color: {
+                    dark: colorDark.value,
+                    light: colorLight.value
+                },
+                // Library baru langsung menerima string 'L', 'M', 'Q', 'H'
+                errorCorrectionLevel: errorLevel.value 
+            }, function (error) {
+                if (error) {
+                    showError('Gagal membuat QR Code. Pastikan URL valid.');
+                    console.error(error);
+                    return;
+                }
+                
+                // Jika berhasil, aktifkan tombol
+                lastValidUrl = url;
+                urlInput.value = url;
+                downloadPngBtn.disabled = false;
+                copyUrlBtn.disabled = false;
+                
+                // Simpan riwayat (lokal & GitHub)
+                pushHistory(url);
+            });
+        } catch (err) {
+            console.error("Library QRCode belum termuat atau terjadi kesalahan:", err);
+            showError("Sistem gagal memuat QR Code. Coba refresh halaman (F5) lalu klik Generate lagi.");
+        }
     }
 
     // ===== Reset =====
