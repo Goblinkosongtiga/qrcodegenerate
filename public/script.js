@@ -8,6 +8,8 @@
     const colorDark      = document.getElementById('colorDark');
     const colorLight     = document.getElementById('colorLight');
     const errorLevel     = document.getElementById('errorLevel');
+    const dotStyle       = document.getElementById('dotStyle');
+    const cornerStyle    = document.getElementById('cornerStyle');
     const qrContainer    = document.getElementById('qrContainer');
     const downloadPngBtn = document.getElementById('downloadPngBtn');
     const copyUrlBtn     = document.getElementById('copyUrlBtn');
@@ -19,8 +21,6 @@
     const HISTORY_KEY = 'qr_generator_history';
     const MAX_HISTORY = 10;
     let lastValidUrl = '';
-    
-    // Variabel untuk menyimpan instance QR Code
     let qrCodeInstance = null;
 
     function normalizeUrl(raw) {
@@ -108,30 +108,35 @@
         qrContainer.innerHTML = '';
         const size = parseInt(sizeSelect.value, 10) || 256;
 
-        // Inisialisasi library QR Code Styling
+        // Konfigurasi QRCodeStyling dengan tambahan gaya titik dan sudut
         qrCodeInstance = new QRCodeStyling({
             width: size,
             height: size,
             data: url,
-            margin: 10, // SANGAT PENTING: Memberi jarak putih di pinggir agar bisa discan!
+            margin: 10,
             qrOptions: {
                 errorCorrectionLevel: errorLevel.value
             },
             dotsOptions: {
                 color: colorDark.value,
-                type: "square"
+                type: dotStyle.value // Mengambil dari dropdown Gaya Titik
+            },
+            cornersSquareOptions: {
+                color: colorDark.value,
+                type: cornerStyle.value // Mengambil dari dropdown Gaya Sudut
+            },
+            cornersDotOptions: {
+                color: colorDark.value,
+                type: cornerStyle.value === 'square' ? 'square' : 'dot' // Menyesuaikan titik tengah sudut
             },
             backgroundOptions: {
                 color: colorLight.value,
             },
-            // Kita render sebagai canvas agar mudah di-download
             type: 'canvas'
         });
 
-        // Tampilkan ke layar
         qrCodeInstance.append(qrContainer);
         
-        // Sembunyikan placeholder dan atur background container agar rapi
         qrContainer.style.padding = '0';
         qrContainer.style.border = 'none';
         qrContainer.style.background = 'transparent';
@@ -154,16 +159,20 @@
         copyUrlBtn.disabled = true;
         lastValidUrl = '';
         qrCodeInstance = null;
+        
+        // Reset semua form ke default
         sizeSelect.value = '256';
         colorDark.value = '#000000';
         colorLight.value = '#ffffff';
         errorLevel.value = 'H';
+        dotStyle.value = 'square';
+        cornerStyle.value = 'square';
+        
         urlInput.focus();
     }
 
     function downloadPng() {
         if (!qrCodeInstance) return;
-        // Fungsi download bawaan dari library qr-code-styling
         qrCodeInstance.download({
             name: `qrcode-${Date.now()}`,
             extension: "png"
@@ -211,6 +220,7 @@
     copyUrlBtn.addEventListener('click', copyUrl);
     downloadHistoryBtn.addEventListener('click', downloadHistoryToTxt);
 
+    // Listener untuk Preset Warna
     document.querySelectorAll('.color-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const dark = e.target.getAttribute('data-dark');
@@ -219,6 +229,14 @@
             colorLight.value = light;
             if (urlInput.value.trim() !== '') generateQr();
         });
+    });
+
+    // FITUR BARU: Otomatis generate ulang saat gaya diubah (jika input tidak kosong)
+    dotStyle.addEventListener('change', () => {
+        if (urlInput.value.trim() !== '') generateQr();
+    });
+    cornerStyle.addEventListener('change', () => {
+        if (urlInput.value.trim() !== '') generateQr();
     });
 
     clearHistoryBtn.addEventListener('click', () => {
