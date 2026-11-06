@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Generator QR Code gratis - buat QR code dari link/URL dengan mudah, tanpa database, 100% di browser." />
+    <title>QR Code Generator — Gratis & Tanpa Database</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>" />
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>🔗 QR Code Generator</h1>
+            <p class="subtitle">Buat QR Code dari link/URL — gratis, cepat, tanpa database</p>
+        </header>
 
+        <!-- Input Section -->
+        <section class="input-section">
+            <label for="urlInput" class="sr-only">Masukkan URL</label>
+            <input
+                type="text"
+                id="urlInput"
+                placeholder="https://contoh.com atau contoh.com"
+                autocomplete="url"
+                spellcheck="false"
+            />
+            <div class="btn-group">
+                <button id="generateBtn" class="btn-primary">Generate QR</button>
+                <button id="resetBtn" class="btn-secondary">Reset</button>
+            </div>
+        </section>
+
+        <!-- Options Section -->
+        <details class="options-section">
+            <summary>⚙️ Opsi Lanjutan (warna & ukuran)</summary>
+            <div class="options-grid">
+                <div class="option">
+                    <label for="sizeSelect">Ukuran</label>
+                    <select id="sizeSelect">
+                        <option value="200">200 × 200</option>
+                        <option value="256" selected>256 × 256</option>
+                        <option value="320">320 × 320</option>
+                        <option value="400">400 × 400</option>
+                        <option value="512">512 × 512</option>
+                    </select>
+                </div>
+                <div class="option">
+                    <label for="colorDark">Warna QR</label>
+                    <input type="color" id="colorDark" value="#000000" />
+                </div>
+                <div class="option">
+                    <label for="colorLight">Warna Latar</label>
+                    <input type="color" id="colorLight" value="#ffffff" />
+                </div>
+                <div class="option">
+                    <label for="errorLevel">Error Correction</label>
+                    <select id="errorLevel">
+                        <option value="L">L (7%)</option>
+                        <option value="M">M (15%)</option>
+                        <option value="Q">Q (25%)</option>
+                        <option value="H" selected>H (30%)</option>
+                    </select>
+                </div>
+            </div>
+        </details>
+
+        <!-- QR Display -->
+        <section class="qr-display" id="qrContainer">
+            <span class="placeholder">QR Code akan muncul di sini</span>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="btn-group download-group">
+            <button id="downloadPngBtn" class="btn-success" disabled>⬇️ Download PNG</button>
+            <button id="copyUrlBtn" class="btn-secondary" disabled>📋 Copy URL</button>
+        </div>
+
+        <!-- History -->
+        <section class="history-section" id="historySection" hidden>
+            <h2>Riwayat Terakhir</h2>
+            <ul id="historyList"></ul>
+            <button id="clearHistoryBtn" class="btn-text">Hapus riwayat</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>Dibuat dengan ❤️ · <a href="https://github.com/" target="_blank" rel="noopener">Source Code</a></p>
+    </footer>
+
+    <!-- Library QRCode dari CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
