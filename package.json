@@ -1,1 +1,19 @@
-
+{
+  "name": "qr-generator",
+  "version": "1.0.0",
+  "description": "Generator QR Code gratis.",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public -l 3000",
+    "start": "npx serve public -l 3000"
+  },
+  "keywords": [
+    "qrcode",
+    "qr-generator",
+    "vercel",
+    "static-site",
+    "vanilla-js"
+  ],
+  "author": "TUAKIA R",
+  "license": "MIT"
+}
