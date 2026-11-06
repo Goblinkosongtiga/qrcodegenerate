@@ -1,8 +1,3 @@
-/* ============================================================
-   QR Code Generator — Client-side + Vercel Backend (GitHub API)
-   Versi Final: Menggunakan Dynamic Import untuk Library qrcode
-   ============================================================ */
-
 (function () {
     'use strict';
 
@@ -33,7 +28,6 @@
     function normalizeUrl(raw) {
         const trimmed = raw.trim();
         if (!trimmed) return null;
-        // Jika sudah ada http/https, biarkan
         if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
         return 'https://' + trimmed;
     }
@@ -47,15 +41,11 @@
         try {
             const raw = localStorage.getItem(HISTORY_KEY);
             return raw ? JSON.parse(raw) : [];
-        } catch {
-            return [];
-        }
+        } catch { return []; }
     }
 
     function saveHistory(list) {
-        try {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
-        } catch {}
+        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch {}
     }
 
     function renderHistory() {
@@ -77,7 +67,6 @@
 
             const delBtn = document.createElement('button');
             delBtn.textContent = '✕';
-            delBtn.title = 'Hapus';
             delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const updated = loadHistory().filter((item) => item !== url);
@@ -87,7 +76,6 @@
 
             li.appendChild(span);
             li.appendChild(delBtn);
-
             li.addEventListener('click', () => {
                 urlInput.value = url;
                 generateQr();
@@ -97,15 +85,14 @@
         });
     }
 
-    // ===== Core: Generate QR & Simpan ke Backend =====
+    // ===== Core: Generate QR =====
     function pushHistory(url) {
-        // 1. Simpan ke LocalStorage (untuk tampilan UI)
         const list = loadHistory().filter((item) => item !== url);
         list.unshift(url);
         saveHistory(list.slice(0, MAX_HISTORY));
         renderHistory();
 
-        // 2. Kirim ke Backend Vercel -> GitHub (riwayat.txt)
+        // Kirim ke Backend Vercel -> GitHub
         fetch('/api/save-history', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -113,67 +100,53 @@
         })
         .then(res => res.json())
         .then(data => {
-            if(data.success) {
-                console.log("✅ Berhasil mencatat riwayat ke GitHub!");
-            } else {
-                console.error("❌ Gagal mencatat ke GitHub:", data.error);
-            }
+            if(data.success) console.log("✅ Riwayat tercatat di GitHub!");
         })
-        .catch(err => {
-            console.error("❌ Error koneksi ke backend:", err);
-        });
+        .catch(err => console.error("❌ Gagal ke backend:", err));
     }
 
-    async function generateQr() {
+    function generateQr() {
         const url = normalizeUrl(urlInput.value);
-
         if (!url) {
             showError('Silakan masukkan link/URL terlebih dahulu!');
             urlInput.focus();
             return;
         }
 
-        // Tampilkan status loading sementara
-        qrContainer.innerHTML = '<span class="placeholder">Memuat QR Code...</span>';
+        // Cek apakah library sudah termuat
+        if (typeof QRCode === 'undefined') {
+            showError("Library QR belum termuat. Coba refresh (F5) halaman ini.");
+            return;
+        }
 
-        try {
-            // 1. Muat library qrcode secara dinamis (Dynamic Import)
-            // Ini adalah cara paling ampuh untuk library versi baru
-            const { default: QRCodeLib } = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
+        qrContainer.innerHTML = '';
+        const size = parseInt(sizeSelect.value, 10) || 256;
+        const canvas = document.createElement('canvas');
+        qrContainer.appendChild(canvas);
 
-            // 2. Bersihkan container setelah library termuat
-            qrContainer.innerHTML = '';
-
-            const size = parseInt(sizeSelect.value, 10) || 256;
+        // Gunakan API bawaan library
+        QRCode.toCanvas(canvas, url, {
+            width: size,
+            margin: 2, 
+            color: {
+                dark: colorDark.value,
+                light: colorLight.value
+            },
+            errorCorrectionLevel: errorLevel.value
+        }, function (error) {
+            if (error) {
+                showError('Gagal membuat QR Code.');
+                console.error(error);
+                return;
+            }
             
-            // 3. Buat elemen canvas
-            const canvas = document.createElement('canvas');
-            qrContainer.appendChild(canvas);
-
-            // 4. Generate QR Code
-            await QRCodeLib.toCanvas(canvas, url, {
-                width: size,
-                margin: 2, // Memberi jarak tepi (quiet zone) agar mudah discan
-                color: {
-                    dark: colorDark.value,
-                    light: colorLight.value
-                },
-                errorCorrectionLevel: errorLevel.value
-            });
-
-            // 5. Jika berhasil, aktifkan tombol dan simpan riwayat
             lastValidUrl = url;
             urlInput.value = url;
             downloadPngBtn.disabled = false;
             copyUrlBtn.disabled = false;
             
             pushHistory(url);
-
-        } catch (err) {
-            console.error("Gagal memuat atau membuat QR Code:", err);
-            qrContainer.innerHTML = '<span class="placeholder">Gagal memuat. Coba refresh halaman.</span>';
-            showError("Gagal memuat library QR Code. Pastikan koneksi internet stabil, lalu coba lagi.");
-        }
+        });
     }
 
     // ===== Reset =====
@@ -228,14 +201,12 @@
 
         let textContent = "--- RIWAYAT GENERATE QR CODE (LOKAL) ---\n";
         textContent += `Tanggal: ${new Date().toLocaleString('id-ID')}\n\n`;
-        
         list.forEach((url, index) => {
             textContent += `${index + 1}. ${url}\n`;
         });
 
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const urlBlob = URL.createObjectURL(blob);
-        
         const link = document.createElement('a');
         link.href = urlBlob;
         link.download = 'riwayat.txt';
@@ -252,30 +223,23 @@
     copyUrlBtn.addEventListener('click', copyUrl);
     downloadHistoryBtn.addEventListener('click', downloadHistoryToTxt);
 
-    // Listener Palet Warna Instan
     document.querySelectorAll('.color-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const dark = e.target.getAttribute('data-dark');
             const light = e.target.getAttribute('data-light');
             colorDark.value = dark;
             colorLight.value = light;
-            
-            // Otomatis generate ulang jika ada isi
-            if (urlInput.value.trim() !== '') {
-                generateQr();
-            }
+            if (urlInput.value.trim() !== '') generateQr();
         });
     });
 
-    // Hapus Riwayat Lokal
     clearHistoryBtn.addEventListener('click', () => {
-        if (confirm('Hapus semua riwayat lokal di browser ini?')) {
+        if (confirm('Hapus semua riwayat lokal?')) {
             localStorage.removeItem(HISTORY_KEY);
             renderHistory();
         }
     });
 
-    // Enter key untuk generate
     urlInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
