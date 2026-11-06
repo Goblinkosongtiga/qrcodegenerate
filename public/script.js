@@ -1,5 +1,6 @@
 /* ============================================================
    QR Code Generator — Client-side + Vercel Backend (GitHub API)
+   Menggunakan Library Modern: qrcode (npm)
    ============================================================ */
 
 (function () {
@@ -39,14 +40,6 @@
 
     function showError(message) {
         alert(message);
-    }
-
-    function getQrDataUrl() {
-        const canvas = qrContainer.querySelector('canvas');
-        if (canvas) return canvas.toDataURL('image/png');
-        const img = qrContainer.querySelector('img');
-        if (img) return img.src;
-        return null;
     }
 
     // ===== LocalStorage History =====
@@ -140,38 +133,48 @@
             return;
         }
 
+        // Bersihkan container
         qrContainer.innerHTML = '';
 
         const size = parseInt(sizeSelect.value, 10) || 256;
+        
+        // Mapping level error correction
         const levelMap = {
-            L: QRCode.CorrectLevel.L,
-            M: QRCode.CorrectLevel.M,
-            Q: QRCode.CorrectLevel.Q,
-            H: QRCode.CorrectLevel.H,
+            L: 'L',
+            M: 'M',
+            Q: 'Q',
+            H: 'H'
         };
 
-        try {
-            new QRCode(qrContainer, {
-                text: url,
-                width: size,
-                height: size,
-                colorDark: colorDark.value,
-                colorLight: colorLight.value,
-                correctLevel: levelMap[errorLevel.value] ?? QRCode.CorrectLevel.H,
-            });
-        } catch (err) {
-            showError('Gagal membuat QR Code. Pastikan URL valid.');
-            console.error(err);
-            return;
-        }
+        // Buat elemen canvas baru
+        const canvas = document.createElement('canvas');
+        qrContainer.appendChild(canvas);
 
-        lastValidUrl = url;
-        urlInput.value = url;
-        downloadPngBtn.disabled = false;
-        copyUrlBtn.disabled = false;
-        
-        // Panggil fungsi simpan riwayat
-        pushHistory(url);
+        // Generate QR Code menggunakan library modern (QRCode.toCanvas)
+        window.QRCode.toCanvas(canvas, url, {
+            width: size,
+            margin: 2, // Memberi jarak tepi (quiet zone) agar mudah discan Google Lens
+            color: {
+                dark: colorDark.value,
+                light: colorLight.value
+            },
+            errorCorrectionLevel: levelMap[errorLevel.value] || 'H'
+        }, function (error) {
+            if (error) {
+                showError('Gagal membuat QR Code. Pastikan URL valid.');
+                console.error(error);
+                return;
+            }
+            
+            // Jika berhasil, aktifkan tombol
+            lastValidUrl = url;
+            urlInput.value = url;
+            downloadPngBtn.disabled = false;
+            copyUrlBtn.disabled = false;
+            
+            // Simpan riwayat
+            pushHistory(url);
+        });
     }
 
     // ===== Reset =====
@@ -190,9 +193,10 @@
 
     // ===== Download PNG =====
     function downloadPng() {
-        const dataUrl = getQrDataUrl();
-        if (!dataUrl) return;
+        const canvas = qrContainer.querySelector('canvas');
+        if (!canvas) return;
 
+        const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `qrcode-${Date.now()}.png`;
         link.href = dataUrl;
@@ -264,6 +268,7 @@
         });
     });
 
+    // Hapus Riwayat Lokal
     clearHistoryBtn.addEventListener('click', () => {
         if (confirm('Hapus semua riwayat lokal di browser ini?')) {
             localStorage.removeItem(HISTORY_KEY);
@@ -271,6 +276,7 @@
         }
     });
 
+    // Enter key untuk generate
     urlInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
