@@ -1,6 +1,6 @@
 /* ============================================================
    QR Code Generator — Client-side + Vercel Backend (GitHub API)
-   Menggunakan Library Modern: qrcode (npm)
+   Versi Final: Menggunakan Dynamic Import untuk Library qrcode
    ============================================================ */
 
 (function () {
@@ -124,7 +124,7 @@
         });
     }
 
-    function generateQr() {
+    async function generateQr() {
         const url = normalizeUrl(urlInput.value);
 
         if (!url) {
@@ -133,46 +133,46 @@
             return;
         }
 
-        // Bersihkan container
-        qrContainer.innerHTML = '';
+        // Tampilkan status loading sementara
+        qrContainer.innerHTML = '<span class="placeholder">Memuat QR Code...</span>';
 
-        const size = parseInt(sizeSelect.value, 10) || 256;
-        
-        // Buat elemen canvas baru
-        const canvas = document.createElement('canvas');
-        qrContainer.appendChild(canvas);
-
-        // Generate QR Code menggunakan library modern (QRCode.toCanvas)
         try {
-            // Panggil global QRCode dari CDN yang baru
-            window.QRCode.toCanvas(canvas, url, {
+            // 1. Muat library qrcode secara dinamis (Dynamic Import)
+            // Ini adalah cara paling ampuh untuk library versi baru
+            const { default: QRCodeLib } = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js');
+
+            // 2. Bersihkan container setelah library termuat
+            qrContainer.innerHTML = '';
+
+            const size = parseInt(sizeSelect.value, 10) || 256;
+            
+            // 3. Buat elemen canvas
+            const canvas = document.createElement('canvas');
+            qrContainer.appendChild(canvas);
+
+            // 4. Generate QR Code
+            await QRCodeLib.toCanvas(canvas, url, {
                 width: size,
                 margin: 2, // Memberi jarak tepi (quiet zone) agar mudah discan
                 color: {
                     dark: colorDark.value,
                     light: colorLight.value
                 },
-                // Library baru langsung menerima string 'L', 'M', 'Q', 'H'
-                errorCorrectionLevel: errorLevel.value 
-            }, function (error) {
-                if (error) {
-                    showError('Gagal membuat QR Code. Pastikan URL valid.');
-                    console.error(error);
-                    return;
-                }
-                
-                // Jika berhasil, aktifkan tombol
-                lastValidUrl = url;
-                urlInput.value = url;
-                downloadPngBtn.disabled = false;
-                copyUrlBtn.disabled = false;
-                
-                // Simpan riwayat (lokal & GitHub)
-                pushHistory(url);
+                errorCorrectionLevel: errorLevel.value
             });
+
+            // 5. Jika berhasil, aktifkan tombol dan simpan riwayat
+            lastValidUrl = url;
+            urlInput.value = url;
+            downloadPngBtn.disabled = false;
+            copyUrlBtn.disabled = false;
+            
+            pushHistory(url);
+
         } catch (err) {
-            console.error("Library QRCode belum termuat atau terjadi kesalahan:", err);
-            showError("Sistem gagal memuat QR Code. Coba refresh halaman (F5) lalu klik Generate lagi.");
+            console.error("Gagal memuat atau membuat QR Code:", err);
+            qrContainer.innerHTML = '<span class="placeholder">Gagal memuat. Coba refresh halaman.</span>';
+            showError("Gagal memuat library QR Code. Pastikan koneksi internet stabil, lalu coba lagi.");
         }
     }
 
