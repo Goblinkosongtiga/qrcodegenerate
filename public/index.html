@@ -26,6 +26,7 @@
 
         <details class="options-section" open>
             <summary>⚙️ Opsi Desain & Warna</summary>
+            
             <div class="options-grid">
                 <div class="option">
                     <label for="sizeSelect">Ukuran</label>
@@ -48,7 +49,30 @@
                 </div>
             </div>
 
-            <div class="color-palette">
+            <!-- FITUR BARU: Gaya Template -->
+            <div class="options-grid" style="margin-top: 10px;">
+                <div class="option">
+                    <label for="dotStyle">Gaya Titik (Dots)</label>
+                    <select id="dotStyle">
+                        <option value="square" selected>Kotak (Default)</option>
+                        <option value="dots">Bulat (Dots)</option>
+                        <option value="rounded">Bulat Ujung (Rounded)</option>
+                        <option value="extra-rounded">Sangat Bulat (Extra Rounded)</option>
+                        <option value="classy">Mewah (Classy)</option>
+                        <option value="classy-rounded">Mewah Bulat (Classy Rounded)</option>
+                    </select>
+                </div>
+                <div class="option">
+                    <label for="cornerStyle">Gaya Sudut (Corners)</label>
+                    <select id="cornerStyle">
+                        <option value="square" selected>Kotak (Default)</option>
+                        <option value="dot">Bulat (Dot)</option>
+                        <option value="extra-rounded">Sangat Bulat</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="color-palette" style="margin-top: 15px;">
                 <span>Preset Warna:</span>
                 <div class="palette-buttons">
                     <button class="color-btn" data-dark="#000000" data-light="#ffffff" style="background: #000; border: 1px solid #ccc;" title="Hitam Putih"></button>
@@ -92,10 +116,9 @@
     </main>
 
     <footer>
-        <p>Dibuat dengan ❤️ · <a href="https://github.com/" target="_blank" rel="noopener">Siluman Eta</a></p>
+        <p>Dibuat dengan ❤️ · <a href="https://github.com/" target="_blank" rel="noopener">Tuakia</a></p>
     </footer>
 
-    <!-- LIBRARY MODERN: qr-code-styling -->
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="script.js"></script>
 </body>
