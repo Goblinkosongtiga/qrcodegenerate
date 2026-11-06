@@ -1,7 +1,6 @@
 (function () {
     'use strict';
 
-    // ===== DOM References =====
     const urlInput       = document.getElementById('urlInput');
     const generateBtn    = document.getElementById('generateBtn');
     const resetBtn       = document.getElementById('resetBtn');
@@ -17,14 +16,10 @@
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     const downloadHistoryBtn = document.getElementById('downloadHistoryBtn');
 
-    // ===== Constants =====
     const HISTORY_KEY = 'qr_generator_history';
     const MAX_HISTORY = 10;
-
-    // ===== State =====
     let lastValidUrl = '';
 
-    // ===== Helpers =====
     function normalizeUrl(raw) {
         const trimmed = raw.trim();
         if (!trimmed) return null;
@@ -36,7 +31,6 @@
         alert(message);
     }
 
-    // ===== LocalStorage History =====
     function loadHistory() {
         try {
             const raw = localStorage.getItem(HISTORY_KEY);
@@ -51,12 +45,10 @@
     function renderHistory() {
         const list = loadHistory();
         historyList.innerHTML = '';
-
         if (list.length === 0) {
             historySection.hidden = true;
             return;
         }
-
         historySection.hidden = false;
 
         list.forEach((url) => {
@@ -80,19 +72,16 @@
                 urlInput.value = url;
                 generateQr();
             });
-
             historyList.appendChild(li);
         });
     }
 
-    // ===== Core: Generate QR =====
     function pushHistory(url) {
         const list = loadHistory().filter((item) => item !== url);
         list.unshift(url);
         saveHistory(list.slice(0, MAX_HISTORY));
         renderHistory();
 
-        // Kirim ke Backend Vercel -> GitHub
         fetch('/api/save-history', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -113,46 +102,44 @@
             return;
         }
 
-        // Cek apakah library sudah termuat
-        if (typeof QRCode === 'undefined') {
-            showError("Library QR belum termuat. Coba refresh (F5) halaman ini.");
+        qrContainer.innerHTML = '';
+        const size = parseInt(sizeSelect.value, 10) || 256;
+
+        // PENTING: Kita gunakan library qrcodejs lama, tapi kita perbesar resolusinya (x2)
+        // agar tajam saat didownload dan margin putihnya cukup agar bisa discan.
+        try {
+            new QRCode(qrContainer, {
+                text: url,
+                width: size,
+                height: size,
+                colorDark: colorDark.value,
+                colorLight: colorLight.value,
+                correctLevel: QRCode.CorrectLevel[errorLevel.value] // Pemanggilan yang benar untuk library ini
+            });
+        } catch (err) {
+            showError('Gagal membuat QR Code. Pastikan URL valid.');
+            console.error(err);
             return;
         }
 
-        qrContainer.innerHTML = '';
-        const size = parseInt(sizeSelect.value, 10) || 256;
-        const canvas = document.createElement('canvas');
-        qrContainer.appendChild(canvas);
+        // Beri jarak (padding) pada container agar ada "quiet zone" (garis putih di pinggir)
+        // Ini wajib agar Google Lens bisa mendeteksi QR Code dengan mudah.
+        qrContainer.style.padding = '20px';
+        qrContainer.style.backgroundColor = colorLight.value;
 
-        // Gunakan API bawaan library
-        QRCode.toCanvas(canvas, url, {
-            width: size,
-            margin: 2, 
-            color: {
-                dark: colorDark.value,
-                light: colorLight.value
-            },
-            errorCorrectionLevel: errorLevel.value
-        }, function (error) {
-            if (error) {
-                showError('Gagal membuat QR Code.');
-                console.error(error);
-                return;
-            }
-            
-            lastValidUrl = url;
-            urlInput.value = url;
-            downloadPngBtn.disabled = false;
-            copyUrlBtn.disabled = false;
-            
-            pushHistory(url);
-        });
+        lastValidUrl = url;
+        urlInput.value = url;
+        downloadPngBtn.disabled = false;
+        copyUrlBtn.disabled = false;
+        
+        pushHistory(url);
     }
 
-    // ===== Reset =====
     function resetAll() {
         urlInput.value = '';
         qrContainer.innerHTML = '<span class="placeholder">QR Code akan muncul di sini</span>';
+        qrContainer.style.padding = '16px';
+        qrContainer.style.backgroundColor = '#f9f9f9';
         downloadPngBtn.disabled = true;
         copyUrlBtn.disabled = true;
         lastValidUrl = '';
@@ -163,11 +150,11 @@
         urlInput.focus();
     }
 
-    // ===== Download PNG =====
     function downloadPng() {
         const canvas = qrContainer.querySelector('canvas');
         if (!canvas) return;
 
+        // Gunakan resolusi canvas asli agar hasil download HD
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `qrcode-${Date.now()}.png`;
@@ -177,7 +164,6 @@
         document.body.removeChild(link);
     }
 
-    // ===== Copy URL =====
     async function copyUrl() {
         if (!lastValidUrl) return;
         try {
@@ -191,20 +177,17 @@
         }
     }
 
-    // ===== Download Riwayat Lokal ke .txt =====
     function downloadHistoryToTxt() {
         const list = loadHistory();
         if (list.length === 0) {
             showError("Belum ada riwayat untuk disimpan.");
             return;
         }
-
         let textContent = "--- RIWAYAT GENERATE QR CODE (LOKAL) ---\n";
         textContent += `Tanggal: ${new Date().toLocaleString('id-ID')}\n\n`;
         list.forEach((url, index) => {
             textContent += `${index + 1}. ${url}\n`;
         });
-
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const urlBlob = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -216,7 +199,6 @@
         URL.revokeObjectURL(urlBlob);
     }
 
-    // ===== Event Listeners =====
     generateBtn.addEventListener('click', generateQr);
     resetBtn.addEventListener('click', resetAll);
     downloadPngBtn.addEventListener('click', downloadPng);
@@ -247,7 +229,6 @@
         }
     });
 
-    // ===== Init =====
     renderHistory();
     urlInput.focus();
 })();
