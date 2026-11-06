@@ -32,8 +32,8 @@
         </section>
 
         <!-- Options Section -->
-        <details class="options-section">
-            <summary>⚙️ Opsi Lanjutan (warna & ukuran)</summary>
+        <details class="options-section" open>
+            <summary>⚙️ Opsi Desain & Warna</summary>
             <div class="options-grid">
                 <div class="option">
                     <label for="sizeSelect">Ukuran</label>
@@ -46,14 +46,6 @@
                     </select>
                 </div>
                 <div class="option">
-                    <label for="colorDark">Warna QR</label>
-                    <input type="color" id="colorDark" value="#000000" />
-                </div>
-                <div class="option">
-                    <label for="colorLight">Warna Latar</label>
-                    <input type="color" id="colorLight" value="#ffffff" />
-                </div>
-                <div class="option">
                     <label for="errorLevel">Error Correction</label>
                     <select id="errorLevel">
                         <option value="L">L (7%)</option>
@@ -61,6 +53,31 @@
                         <option value="Q">Q (25%)</option>
                         <option value="H" selected>H (30%)</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Palet Warna Instan -->
+            <div class="color-palette">
+                <span>Preset Warna:</span>
+                <div class="palette-buttons">
+                    <button class="color-btn" data-dark="#000000" data-light="#ffffff" style="background: #000; border: 1px solid #ccc;" title="Hitam Putih"></button>
+                    <button class="color-btn" data-dark="#1e3a8a" data-light="#eff6ff" style="background: #1e3a8a;" title="Biru"></button>
+                    <button class="color-btn" data-dark="#065f46" data-light="#ecfdf5" style="background: #065f46;" title="Hijau"></button>
+                    <button class="color-btn" data-dark="#9d174d" data-light="#fdf2f8" style="background: #9d174d;" title="Merah Muda"></button>
+                    <button class="color-btn" data-dark="#b45309" data-light="#fffbeb" style="background: #b45309;" title="Oranye"></button>
+                    <button class="color-btn" data-dark="#3b0764" data-light="#faf5ff" style="background: #3b0764;" title="Ungu"></button>
+                </div>
+            </div>
+
+            <!-- Custom Warna -->
+            <div class="options-grid" style="margin-top: 15px;">
+                <div class="option">
+                    <label for="colorDark">Warna QR</label>
+                    <input type="color" id="colorDark" value="#000000" />
+                </div>
+                <div class="option">
+                    <label for="colorLight">Warna Latar</label>
+                    <input type="color" id="colorLight" value="#ffffff" />
                 </div>
             </div>
         </details>
@@ -76,19 +93,21 @@
             <button id="copyUrlBtn" class="btn-secondary" disabled>📋 Copy URL</button>
         </div>
 
-        <!-- History -->
+        <!-- History Section -->
         <section class="history-section" id="historySection" hidden>
-            <h2>Riwayat Terakhir</h2>
+            <div class="history-header">
+                <h2>Riwayat Terakhir</h2>
+                <button id="downloadHistoryBtn" class="btn-text" style="color: #667eea; text-decoration: none; font-weight: bold;">⬇️ Simpan ke riwayat.txt</button>
+            </div>
             <ul id="historyList"></ul>
-            <button id="clearHistoryBtn" class="btn-text">Hapus riwayat</button>
+            <button id="clearHistoryBtn" class="btn-text">Hapus riwayat lokal</button>
         </section>
     </main>
 
     <footer>
-        <p>Dibuat dengan ❤️ · <a href="https://github.com/" target="_blank" rel="noopener">Source Code</a></p>
+        <p>Dibuat dengan ❤️ · <a href="https://github.com/" target="_blank" rel="noopener">TUAKIA R</a></p>
     </footer>
 
-    <!-- Library QRCode dari CDN -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="script.js"></script>
 </body>
