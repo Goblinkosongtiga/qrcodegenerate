@@ -131,6 +131,8 @@ button:disabled {
     font-size: 13px;
     padding: 8px;
     text-decoration: underline;
+    border: none;
+    cursor: pointer;
 }
 
 /* ===== Options ===== */
@@ -184,6 +186,36 @@ button:disabled {
     padding: 2px;
 }
 
+/* ===== Palet Warna ===== */
+.color-palette {
+    margin-top: 15px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.palette-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.color-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex: none;
+    transition: transform 0.2s;
+}
+
+.color-btn:hover {
+    transform: scale(1.15);
+}
+
 /* ===== QR Display ===== */
 .qr-display {
     display: flex;
@@ -221,12 +253,19 @@ button:disabled {
     padding-top: 20px;
 }
 
-.history-section h2 {
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.history-header h2 {
     font-size: 15px;
     color: var(--text-muted);
-    margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin: 0;
 }
 
 #historyList {
@@ -266,6 +305,10 @@ button:disabled {
     font-size: 12px;
     background: transparent;
     color: #c00;
+}
+
+#historyList li button:hover {
+    background: rgba(204, 0, 0, 0.1);
 }
 
 /* ===== Footer ===== */
