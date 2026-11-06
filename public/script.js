@@ -19,6 +19,9 @@
     const HISTORY_KEY = 'qr_generator_history';
     const MAX_HISTORY = 10;
     let lastValidUrl = '';
+    
+    // Variabel untuk menyimpan instance QR Code
+    let qrCodeInstance = null;
 
     function normalizeUrl(raw) {
         const trimmed = raw.trim();
@@ -105,27 +108,33 @@
         qrContainer.innerHTML = '';
         const size = parseInt(sizeSelect.value, 10) || 256;
 
-        // PENTING: Kita gunakan library qrcodejs lama, tapi kita perbesar resolusinya (x2)
-        // agar tajam saat didownload dan margin putihnya cukup agar bisa discan.
-        try {
-            new QRCode(qrContainer, {
-                text: url,
-                width: size,
-                height: size,
-                colorDark: colorDark.value,
-                colorLight: colorLight.value,
-                correctLevel: QRCode.CorrectLevel[errorLevel.value] // Pemanggilan yang benar untuk library ini
-            });
-        } catch (err) {
-            showError('Gagal membuat QR Code. Pastikan URL valid.');
-            console.error(err);
-            return;
-        }
+        // Inisialisasi library QR Code Styling
+        qrCodeInstance = new QRCodeStyling({
+            width: size,
+            height: size,
+            data: url,
+            margin: 10, // SANGAT PENTING: Memberi jarak putih di pinggir agar bisa discan!
+            qrOptions: {
+                errorCorrectionLevel: errorLevel.value
+            },
+            dotsOptions: {
+                color: colorDark.value,
+                type: "square"
+            },
+            backgroundOptions: {
+                color: colorLight.value,
+            },
+            // Kita render sebagai canvas agar mudah di-download
+            type: 'canvas'
+        });
 
-        // Beri jarak (padding) pada container agar ada "quiet zone" (garis putih di pinggir)
-        // Ini wajib agar Google Lens bisa mendeteksi QR Code dengan mudah.
-        qrContainer.style.padding = '20px';
-        qrContainer.style.backgroundColor = colorLight.value;
+        // Tampilkan ke layar
+        qrCodeInstance.append(qrContainer);
+        
+        // Sembunyikan placeholder dan atur background container agar rapi
+        qrContainer.style.padding = '0';
+        qrContainer.style.border = 'none';
+        qrContainer.style.background = 'transparent';
 
         lastValidUrl = url;
         urlInput.value = url;
@@ -139,10 +148,12 @@
         urlInput.value = '';
         qrContainer.innerHTML = '<span class="placeholder">QR Code akan muncul di sini</span>';
         qrContainer.style.padding = '16px';
-        qrContainer.style.backgroundColor = '#f9f9f9';
+        qrContainer.style.border = '2px dashed #e0e0e0';
+        qrContainer.style.background = '#f9f9f9';
         downloadPngBtn.disabled = true;
         copyUrlBtn.disabled = true;
         lastValidUrl = '';
+        qrCodeInstance = null;
         sizeSelect.value = '256';
         colorDark.value = '#000000';
         colorLight.value = '#ffffff';
@@ -151,17 +162,12 @@
     }
 
     function downloadPng() {
-        const canvas = qrContainer.querySelector('canvas');
-        if (!canvas) return;
-
-        // Gunakan resolusi canvas asli agar hasil download HD
-        const dataUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `qrcode-${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (!qrCodeInstance) return;
+        // Fungsi download bawaan dari library qr-code-styling
+        qrCodeInstance.download({
+            name: `qrcode-${Date.now()}`,
+            extension: "png"
+        });
     }
 
     async function copyUrl() {
